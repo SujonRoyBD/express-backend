@@ -1,88 +1,66 @@
-// const express = require("express");
-// import { RequestHeadersMessage } from "./node_modules/undici-types/diagnostics-channel.d";
-// const router = express.Router();
-
-// router.get("/", (req, res) => {
-//   res.send("user rpure");
-// });
-// router.get("/login", (req, res) => {
-//   res.send("user login");
-// });
-// router.get("/resister", (req, res) => {
-//   res.send("user resister");
-// });
-// router.use((req, res) => {
-//   res.send("not found");
-// });
-// module.exports = router;
-const bodyParser = require("body-parser");
-
 const express = require("express");
+const bodyParser = require("body-parser");
+const path = require("path");
+
 const router = express.Router();
 
-router.use(bodyParser.urlencoded());
-
+// Middleware
+router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
+// Home Route
 router.get("/", (req, res) => {
-  res.sendFile(__dirname + "/trangleBase/index.html");
-});
-router.get("/trangle", (req, res) => {
-  res.sendFile(__dirname + "/trangleBase/trangle.html");
-});
-router.post("/trangle", (req, res) => {
-  const height = req.body.height;
-  const base = req.body.base;
-  const area = 0.5 * base * height;
-  res.send(`data pyce re vai : ${area}`);
+  res.sendFile(path.join(__dirname, "trangleBase", "index.html"));
 });
 
-router.get("/", (req, res) => {
-  res.send("user");
+// Static Routes
+router.get("/trangle", (req, res) => {
+  res.sendFile(path.join(__dirname, "trangleBase", "trangle.html"));
 });
-router.use((req, res, next) => {
-  res.status(400).send("somewwwww");
+
+router.post("/trangle", (req, res) => {
+  const { height, base } = req.body;
+  const area = 0.5 * parseFloat(base) * parseFloat(height);
+  res.send(`Triangle area: ${area}`);
 });
+
+// API Routes
+router.get("/api/user", (req, res) => {
+  res.json([
+    {
+      name: "k bloe dive vai",
+      roll: "f5555",
+    }
+  ]);
+});
+
 router.get("/login", (req, res) => {
   res.send("logins");
 });
+
 router.get("/resister", (req, res) => {
-  //   res.status(200).json({
-  //     massege: "i am sujon",
-  //     statusCode: 200,
-  //   });
-  //   res.redirect("/login");
-  res.statusCode = 200;
-  res.sendFile(__dirname + "/views/resister.html");
-});
-router.get("/home", (req, res) => {
-  //   res.status(200).json({
-  //     massege: "i am sujon",
-  //     statusCode: 200,
-  //   });
-  //   res.redirect("/login");
-  res.statusCode = 200;
-  res.sendFile(__dirname + "/views/home.html");
+  res.status(200).sendFile(path.join(__dirname, "views", "resister.html"));
 });
 
+router.get("/home", (req, res) => {
+  res.status(200).sendFile(path.join(__dirname, "views", "home.html"));
+});
+
+// Query Params
 router.get("/id", (req, res) => {
-  const id = req.query.id;
-  const name = req.query.name;
-  res.send(`this is e id ${id} : name is ${name}`);
+  const { id, name } = req.query;
+  res.send(`ID: ${id}, Name: ${name}`);
 });
+
+// URL Params
 router.get("/userId/:id/userAge/:age", (req, res) => {
-  try {
-    const id = req.params.id;
-    const age = req.params.age;
-    console.log(id, age);
-    res.send(`this is e id ${id} : name is ${age}`);
-  } catch (error) {
-    console.log(`error from useid route`);
-  }
+  const { id, age } = req.params;
+  res.send(`User ID: ${id}, Age: ${age}`);
 });
-// router.get("/userId/:id/userAge/:age", (req, res) => {
-//   const id = req.header("id");
-//   const age = req.header("age");
-//   res.send(`this is e id ${id} : name is ${age}`);
-// });
+
+// 404 handler (must be last)
+router.use((req, res) => {
+  res.status(404).send("Route not found");
+});
+
 module.exports = router;
